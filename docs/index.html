@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Uploader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .upload-status {
+            margin-top: 20px;
+        }
+        .uploaded-image {
+            max-width: 100%;
+            height: auto;
+        }
+        .copy-btn {
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="fileInput">
+    <div id="uploadStatus" class="upload-status"></div>
+
+    <script>
+        function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('https://telegraph.c1n.top/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                updateUI(data[0].src);
+            })
+            .catch(error => {
+                showError('圖片上傳失敗');
+            });
+        }
+
+        function updateUI(src) {
+            const uploadStatus = document.getElementById('uploadStatus');
+            uploadStatus.innerHTML = `
+                <img src="${src}" alt="Uploaded Image" class="uploaded-image">
+                <input type="text" id="imageUrl" value="https://telegraph.c1n.top${src}">
+                <button class="copy-btn" onclick="copyImageUrl()">Copy</button>
+            `;
+        }
+
+        function showError(message) {
+            const uploadStatus = document.getElementById('uploadStatus');
+            uploadStatus.innerHTML = `<div style="color: coral; font-size: larger;">${message}</div>`;
+        }
+
+        function copyImageUrl() {
+            const imageUrl = document.getElementById('imageUrl');
+            imageUrl.select();
+            document.execCommand('copy');
+            const copyBtn = document.querySelector('.copy-btn');
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => {
+                copyBtn.textContent = "Copy";
+            }, 1000);
+        }
+
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+            if (file) {
+                uploadImage(file);
+            }
+        });
+    </script>
+</body>
+</html>
